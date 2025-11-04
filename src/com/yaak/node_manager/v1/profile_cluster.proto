@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package com.yaak.node_manager.v1;
+
+option go_package = "github.com/yaak/node-manager/gen/com/yaak/node_manager/v1";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "com/yaak/node_manager/v1/distributed_settings.proto";
+
+service ProfileClusterService {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {
+    name: "Profile Cluster Service"
+    description: "APIs for managing profile clusters."
+  };
+
+  rpc CreateProfileCluster(CreateProfileClusterRequest) returns (CreateProfileClusterResponse) {
+    option (google.api.http) = {
+      post: "/profile-clusters/v1"
+      body: "*"
+    };
+  }
+
+  rpc GetProfileCluster(GetProfileClusterRequest) returns (GetProfileClusterResponse) {
+    option (google.api.http) = {
+      get: "/profile-clusters/v1/{identifier}"
+    };
+  }
+
+  rpc ListProfileClusters(ListProfileClustersRequest) returns (ListProfileClustersResponse) {
+    option (google.api.http) = {
+      get: "/profile-clusters/v1"
+    };
+  }
+
+  rpc UpdateProfileCluster(UpdateProfileClusterRequest) returns (UpdateProfileClusterResponse) {
+    option (google.api.http) = {
+      patch: "/profile-clusters/v1/{cluster.identifier}"
+      body: "cluster"
+    };
+  }
+
+}
+
+message ProfileCluster {
+  string identifier = 1; // bigint as string
+  string organization_id = 2;
+  repeated string labels = 3;
+  optional string name = 4;
+  optional string description = 5;
+  // Priority order controls selection precedence. Higher values win on ties and 0 is the default.
+  optional int32 priority_order = 6;
+  repeated DistributedSettings settings_list = 7;
+}
+
+message CreateProfileClusterRequest {
+  ProfileCluster cluster = 1;
+}
+
+message CreateProfileClusterResponse {
+  ProfileCluster cluster = 1;
+}
+
+message GetProfileClusterRequest {
+  string identifier = 1;
+}
+
+message GetProfileClusterResponse {
+  ProfileCluster cluster = 1;
+}
+
+message ListProfileClustersRequest {}
+
+message ListProfileClustersResponse {
+  repeated ProfileCluster clusters = 1;
+}
+
+message UpdateProfileClusterRequest {
+  ProfileCluster cluster = 1;
+}
+
+message UpdateProfileClusterResponse {
+  ProfileCluster cluster = 1;
+}
+

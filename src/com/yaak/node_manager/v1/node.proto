@@ -1,0 +1,195 @@
+syntax = "proto3";
+
+package com.yaak.node_manager.v1;
+
+option go_package = "github.com/yaak/node-manager/gen/com/yaak/node_manager/v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service NodeService {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {
+    name: "Nodes Service"
+    description: "NodeService provides the API for managing fleet nodes."
+  };
+
+  // RPC for listing nodes with pagination.
+  rpc ListNodes(ListNodesRequest) returns (ListNodesResponse) {
+    option (google.api.http) = {
+      get: "/nodes/v1"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Nodes Service"]
+      summary: "List Nodes"
+    };
+  }
+
+  // RPC for getting a specific node.
+  rpc GetNode(GetNodeRequest) returns (GetNodeResponse) {
+    option (google.api.http) = {
+      get: "/nodes/v1/{identifier}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "404"
+        value: {description: "Node not found"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Nodes Service"]
+      summary: "Get Node"
+    };
+  }
+
+  // RPC for getting a node's effective settings.
+  rpc GetNodeEffectiveSettings(GetNodeEffectiveSettingsRequest) returns (GetNodeEffectiveSettingsResponse) {
+    option (google.api.http) = {
+      get: "/nodes/v1/{identifier}/settings"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "404"
+        value: {description: "Node not found"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Nodes Service"]
+      summary: "Get Node Effective Settings"
+    };
+  }
+}
+
+// Node represents a fleet node in the system.
+message Node {
+  // Unique identifier for the node.
+  string identifier = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "5a7a0720-a747-475b-81a2-2d448160fbae"
+  }];
+
+  // Custom labels for grouping and filtering nodes.
+  repeated string labels = 2;
+
+  // Revision of the node resource, incremented on each update.
+  int32 revision = 3;
+
+
+  // ID of the organization that owns this node.
+  string organization_id = 5;
+
+  // Current link status of the node.
+  optional LinkStatus link_status = 6;
+
+  // Attributes that uniquely identify this node.
+  map<string, string> primary_attributes = 7;
+
+  // Additional attributes that do not affect node identity.
+  map<string, string> secondary_attributes = 8;
+}
+
+// LinkStatus represents the current connection state of a node.
+message LinkStatus {
+  // Type of link (e.g., "grpc", "opamp", etc.).
+  string link_type = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "opamp"
+  }];
+
+  // Last received sequence number from the node.
+  uint64 last_seq_num = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "123456"
+  }];
+
+  // Timestamp of the last message received from the node.
+  google.protobuf.Timestamp last_message_timestamp = 3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "2024-03-20T10:00:00Z"
+  }];
+}
+
+// ListNodesRequest is the request message for ListNodes RPC.
+message ListNodesRequest {
+  // The maximum number of nodes to return.
+  optional int32 limit = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "10"
+  }];
+
+  // The number of nodes to skip.
+  optional int32 offset = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "0"
+  }];
+
+  // Token for retrieving the next page of results.
+  optional string cursor = 3;
+}
+
+// ListNodesResponse is the response message for ListNodes RPC.
+message ListNodesResponse {
+  // The list of nodes.
+  repeated Node nodes = 1;
+
+  // The total number of nodes.
+  int32 total_items = 2;
+
+  // Token to retrieve the next page of results.
+  optional string next_cursor = 3;
+}
+
+// GetNodeRequest is the request message for GetNode RPC.
+message GetNodeRequest {
+  // ID of the node to retrieve.
+  string identifier = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "5a7a0720-a747-475b-81a2-2d448160fbae"
+  }];
+}
+
+// GetNodeResponse is the response message for GetNode RPC.
+message GetNodeResponse {
+  // The requested node.
+  Node node = 1;
+}
+
+// GetNodeEffectiveSettingsRequest is the request message for GetNodeEffectiveSettings RPC.
+message GetNodeEffectiveSettingsRequest {
+  // ID of the node to get settings for.
+  string identifier = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "5a7a0720-a747-475b-81a2-2d448160fbae"
+  }];
+}
+
+// GetNodeEffectiveSettingsResponse is the response message for GetNodeEffectiveSettings RPC.
+message GetNodeEffectiveSettingsResponse {
+  // The effective settings for the node.
+  string effective_settings = 1;
+}
+

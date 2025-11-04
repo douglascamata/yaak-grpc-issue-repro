@@ -1,0 +1,262 @@
+syntax = "proto3";
+
+package com.yaak.node_manager.v1;
+
+option go_package = "github.com/yaak/node-manager/gen/com/yaak/node_manager/v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service DistributedSettingsService {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {
+    name: "Distributed Settings Service"
+    description: "DistributedSettingsService provides the API for managing node settings."
+  };
+
+  // RPC for creating a new distributed settings.
+  rpc CreateDistributedSettings(CreateDistributedSettingsRequest) returns (CreateDistributedSettingsResponse) {
+    option (google.api.http) = {
+      post: "/distributed-settings/v1"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Distributed Settings Service"]
+      summary: "Create Distributed Settings"
+    };
+  }
+
+  // RPC for listing distributed settings with pagination.
+  rpc ListDistributedSettings(ListDistributedSettingsRequest) returns (ListDistributedSettingsResponse) {
+    option (google.api.http) = {
+      get: "/distributed-settings/v1"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Distributed Settings Service"]
+      summary: "List Distributed Settings"
+    };
+  }
+
+  // RPC for retrieving a single distributed settings by ID.
+  rpc GetDistributedSettings(GetDistributedSettingsRequest) returns (GetDistributedSettingsResponse) {
+    option (google.api.http) = {
+      get: "/distributed-settings/v1/{identifier}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "404"
+        value: {description: "Distributed settings not found"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Distributed Settings Service"]
+      summary: "Get Distributed Settings"
+    };
+  }
+
+  // RPC for toggling activation state of distributed settings.
+  rpc SetDistributedSettingsActivation(SetDistributedSettingsActivationRequest) returns (SetDistributedSettingsActivationResponse) {
+    option (google.api.http) = {
+      patch: "/distributed-settings/v1/{identifier}/activation"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "404"
+        value: {description: "Distributed settings not found"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Distributed Settings Service"]
+      summary: "Update Distributed Settings Activation"
+    };
+  }
+}
+
+// DistributedSettings represents settings that can be applied to nodes.
+message DistributedSettings {
+  // Unique identifier for the settings.
+  string identifier = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "5a7a0720-a747-475b-81a2-2d448160fbae"
+  }];
+
+  // Custom labels for grouping and filtering settings.
+  repeated string labels = 2;
+
+  // Revision of the settings resource, incremented on each update.
+  int32 revision = 3;
+
+  // Checksum of the raw settings content.
+  string checksum = 4 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "sha256:abc123..."
+  }];
+
+  // The raw settings content.
+  string raw_settings = 5;
+
+  // ID of the organization that owns these settings.
+  string organization_id = 6;
+
+  // Matcher for targeting specific nodes.
+  NodeMatcher node_matcher = 7;
+
+  // Timestamp when the settings were created.
+  optional google.protobuf.Timestamp creation_time = 8 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "2024-03-20T10:00:00Z"
+  }];
+
+  // Timestamp when the settings were last updated.
+  optional google.protobuf.Timestamp modification_time = 9 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "2024-03-20T10:00:00Z"
+  }];
+
+  // ID of the profile cluster these settings belong to.
+  string profile_cluster_id = 10;
+
+  // Revision of the settings within its cluster (e.g., "1.0", "1.1", "1.2").
+  string revision_label = 11 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1.2"
+  }];
+
+  // Indicates whether these settings are currently enabled within its cluster.
+  optional bool enabled = 12;
+
+  // Display name of the operator that created or last updated these settings.
+  string operator = 13;
+}
+
+// NodeMatcher defines criteria for selecting nodes to apply settings to.
+message NodeMatcher {
+  // Attributes that uniquely identify target nodes.
+  map<string, string> primary_attributes = 1;
+
+  // Additional attributes for filtering target nodes.
+  map<string, string> secondary_attributes = 2;
+}
+
+// CreateDistributedSettingsRequest is the request message for CreateDistributedSettings RPC.
+message CreateDistributedSettingsRequest {
+  // The distributed settings to create.
+  DistributedSettings distributed_settings = 1;
+}
+
+// CreateDistributedSettingsResponse is the response message for CreateDistributedSettings RPC.
+message CreateDistributedSettingsResponse {
+  // The created distributed settings.
+  DistributedSettings distributed_settings = 1;
+}
+
+// ListDistributedSettingsRequest is the request message for ListDistributedSettings RPC.
+message ListDistributedSettingsRequest {
+  // Filter by specific node ID.
+  optional string identifier = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "5a7a0720-a747-475b-81a2-2d448160fbae"
+  }];
+
+  // Filter by cluster label.
+  optional string cluster_label = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "prod-cluster-1"
+  }];
+
+  // Filter by primary attributes.
+  map<string, string> primary_attributes = 3;
+
+  // Filter by secondary attributes.
+  map<string, string> secondary_attributes = 4;
+
+  // Filter by settings status.
+  optional string settings_status = 5 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "active"
+  }];
+
+  // The maximum number of settings to return.
+  optional int32 limit = 6 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "10"
+  }];
+
+  // The number of settings to skip.
+  optional int32 offset = 7 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "0"
+  }];
+
+  // Token for retrieving the next page of results.
+  optional string cursor = 8;
+
+  // ID of the profile cluster to list revisions for.
+  optional string profile_cluster_id = 9 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "123"
+  }];
+}
+
+// ListDistributedSettingsResponse is the response message for ListDistributedSettings RPC.
+message ListDistributedSettingsResponse {
+  // The list of distributed settings.
+  repeated DistributedSettings settings_list = 1;
+
+  // The total number of settings.
+  int32 total_items = 2;
+
+  // Token to retrieve the next page of results.
+  optional string next_cursor = 3;
+}
+message GetDistributedSettingsRequest {
+  string identifier = 1;
+}
+
+message GetDistributedSettingsResponse {
+  DistributedSettings distributed_settings = 1;
+}
+
+message SetDistributedSettingsActivationRequest {
+  string identifier = 1;
+  bool enabled = 2;
+}
+
+message SetDistributedSettingsActivationResponse {
+  DistributedSettings distributed_settings = 1;
+}
+

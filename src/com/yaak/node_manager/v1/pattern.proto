@@ -1,0 +1,163 @@
+syntax = "proto3";
+
+package com.yaak.node_manager.v1;
+
+option go_package = "github.com/yaak/node-manager/gen/com/yaak/node_manager/v1";
+
+import "com/yaak/node_manager/v1/distributed_settings.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service PatternService {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {
+    name: "Patterns Service"
+    description: "PatternService provides the API for managing node settings patterns."
+  };
+
+  // RPC for rendering a pattern without applying it.
+  rpc RenderPattern(RenderPatternRequest) returns (RenderPatternResponse) {
+    option (google.api.http) = {
+      post: "/patterns/v1:render"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Patterns Service"]
+      summary: "Render Pattern"
+    };
+  }
+
+  // RPC for sending a pattern to a single node.
+  rpc SendPattern(SendPatternRequest) returns (SendPatternResponse) {
+    option (google.api.http) = {
+      post: "/patterns/v1:send"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "404"
+        value: {description: "Node not found"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Patterns Service"]
+      summary: "Send Pattern"
+    };
+  }
+
+  // RPC for sending a pattern to multiple nodes.
+  rpc SendMultiNodePattern(SendMultiNodePatternRequest) returns (SendMultiNodePatternResponse) {
+    option (google.api.http) = {
+      post: "/patterns/v1:send-multi"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "400"
+        value: {description: "Bad Request"}
+      }
+      responses: {
+        key: "401"
+        value: {description: "Unauthorized request"}
+      }
+      responses: {
+        key: "404"
+        value: {description: "One or more nodes not found"}
+      }
+      responses: {
+        key: "500"
+        value: {description: "Internal server error"}
+      }
+      tags: ["Patterns Service"]
+      summary: "Send Multi-Node Pattern"
+    };
+  }
+}
+
+// RenderPatternRequest is the request message for RenderPattern RPC.
+message RenderPatternRequest {
+  // Version of the chart to use.
+  string chart_version = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1.0.0"
+  }];
+
+  // Matcher for targeting specific nodes.
+  NodeMatcher node_matcher = 2;
+
+  // Parameters to use in the pattern rendering.
+  string parameters = 3;
+}
+
+// RenderPatternResponse is the response message for RenderPattern RPC.
+message RenderPatternResponse {
+  // The rendered output.
+  string output = 1;
+}
+
+// SendPatternRequest is the request message for SendPattern RPC.
+message SendPatternRequest {
+  // Version of the chart to use.
+  string chart_version = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1.0.0"
+  }];
+
+  // Matcher for targeting a specific node.
+  NodeMatcher node_matcher = 2;
+
+  // Parameters to use in the pattern rendering.
+  string parameters = 3;
+
+  // profile cluster to associate the created settings with.
+  string profile_cluster_id = 4;
+}
+
+// SendPatternResponse is the response message for SendPattern RPC.
+message SendPatternResponse {
+  // The rendered and applied output.
+  string output = 1;
+}
+
+// SendMultiNodePatternRequest is the request message for SendMultiNodePattern RPC.
+message SendMultiNodePatternRequest {
+  // Version of the chart to use.
+  string chart_version = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1.0.0"
+  }];
+
+  // Matcher for targeting multiple nodes.
+  NodeMatcher node_matcher = 2;
+
+  // Parameters to use in the pattern rendering.
+  string parameters = 3;
+
+  // Optional: profile cluster to associate the created settings with.
+  optional string profile_cluster_id = 4;
+}
+
+// SendMultiNodePatternResponse is the response message for SendMultiNodePattern RPC.
+message SendMultiNodePatternResponse {
+  // Map of node IDs to their rendered and applied outputs.
+  map<string, string> outputs = 1;
+}
+

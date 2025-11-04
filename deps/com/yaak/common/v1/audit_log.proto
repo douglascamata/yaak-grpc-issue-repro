@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package com.yaak.common.v1;
+
+import "google/protobuf/descriptor.proto";
+
+message AuditLogDescription {
+  string description = 1;
+}
+
+extend google.protobuf.MethodOptions {
+  AuditLogDescription audit_log_description = 5001;
+}
+
